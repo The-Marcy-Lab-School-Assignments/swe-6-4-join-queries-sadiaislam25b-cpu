@@ -4,20 +4,40 @@ const pool = require('./db/pool');
 //    Only bookmarks with a matching user are returned.
 //    Return an array of objects. Each object should have: title, url, username.
 const getAllBookmarksWithUsername = async () => {
-  // YOUR CODE HERE
+  const result = await pool.query(`
+    SELECT bookmarks.title, bookmarks.url, users.username
+    FROM bookmarks
+    JOIN users ON bookmarks.user_id = users.user_id;
+  `);
+
+  return result.rows;
 };
 
 // 2. Get all bookmarks saved by a specific user.
 //    Return an array of objects. Each object should have: title, url, username.
 const getBookmarksByUsername = async (username) => {
-  // YOUR CODE HERE
+  const result = await pool.query(`
+    SELECT bookmarks.title, bookmarks.url, users.username
+    FROM bookmarks
+    JOIN users ON bookmarks.user_id = users.user_id
+    WHERE users.username = $1;
+  `, [username]);
+
+  return result.rows;
 };
 
 // 3. Get all bookmarks that have at least one tag, along with the tag name.
 //    A bookmark with two tags should appear twice (once per tag).
 //    Return an array of objects. Each object should have: title, url, tag_name.
 const getBookmarksWithAllTags = async () => {
-  // YOUR CODE HERE
+  const result = await pool.query(`
+    SELECT bookmarks.title, bookmarks.url, tags.tag_name
+    FROM bookmarks
+    JOIN bookmarks_tags ON bookmarks.id = bookmarks_tags.bookmark_id
+    JOIN tags ON tags.id = bookmarks_tags.tag_id;
+  `);
+
+  return result.rows;
 };
 
 // 4. Get all users and the total number of bookmarks they have saved.
@@ -25,13 +45,28 @@ const getBookmarksWithAllTags = async () => {
 //    Group by users.user_id and alias the count as total_bookmarks.
 //    Return an array of objects. Each object should have: username, total_bookmarks.
 const getUsersWithBookmarkCount = async () => {
-  // YOUR CODE HERE
+  const result = await pool.query(`
+    SELECT users.username, COUNT(bookmarks.id) AS total_bookmarks
+    FROM users
+    LEFT JOIN bookmarks ON users.user_id = bookmarks.user_id
+    GROUP BY users.user_id;
+  `);
+
+  return result.rows;
 };
 
 // 5. Get all bookmarks that have no tags.
 //    Return an array of objects. Each object should have: title, url, username.
 const getBookmarksWithNoTags = async () => {
-  // YOUR CODE HERE
+  const result = await pool.query(`
+    SELECT bookmarks.title, bookmarks.url, users.username
+    FROM bookmarks
+    JOIN users ON bookmarks.user_id = users.user_id
+    LEFT JOIN bookmarks_tags ON bookmarks.id = bookmarks_tags.bookmark_id
+    WHERE bookmarks_tags.bookmark_id IS NULL;
+  `);
+
+  return result.rows;
 };
 
 const main = async () => {
