@@ -31,12 +31,11 @@ const getBookmarksByUsername = async (username) => {
 //    Return an array of objects. Each object should have: title, url, tag_name.
 const getBookmarksWithAllTags = async () => {
   const result = await pool.query(`
-    SELECT bookmarks.title, bookmarks.url, tags.tag_name
+    SELECT bookmarks.title, bookmarks.url, tags.name AS tag_name
     FROM bookmarks
-    JOIN bookmarks_tags ON bookmarks.id = bookmarks_tags.bookmark_id
-    JOIN tags ON tags.id = bookmarks_tags.tag_id;
+    JOIN bookmark_tags ON bookmarks.bookmark_id = bookmark_tags.bookmark_id
+    JOIN tags ON tags.tag_id = bookmark_tags.tag_id;
   `);
-
   return result.rows;
 };
 
@@ -46,7 +45,7 @@ const getBookmarksWithAllTags = async () => {
 //    Return an array of objects. Each object should have: username, total_bookmarks.
 const getUsersWithBookmarkCount = async () => {
   const result = await pool.query(`
-    SELECT users.username, COUNT(bookmarks.id) AS total_bookmarks
+    SELECT users.username, COUNT(bookmarks.bookmark_id) AS total_bookmarks
     FROM users
     LEFT JOIN bookmarks ON users.user_id = bookmarks.user_id
     GROUP BY users.user_id;
@@ -62,10 +61,9 @@ const getBookmarksWithNoTags = async () => {
     SELECT bookmarks.title, bookmarks.url, users.username
     FROM bookmarks
     JOIN users ON bookmarks.user_id = users.user_id
-    LEFT JOIN bookmarks_tags ON bookmarks.id = bookmarks_tags.bookmark_id
-    WHERE bookmarks_tags.bookmark_id IS NULL;
+    LEFT JOIN bookmark_tags ON bookmarks.bookmark_id = bookmark_tags.bookmark_id
+    WHERE bookmark_tags.bookmark_id IS NULL;
   `);
-
   return result.rows;
 };
 
